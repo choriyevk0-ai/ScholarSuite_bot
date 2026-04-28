@@ -169,7 +169,19 @@ async def get_ielts_score(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return ACTIVITIES
 
 
-async def get_activities(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_sat(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if context.user_data.get("sat_pending"):
+        return await get_sat_score(update, context)
+    return await get_sat(update, context)
+
+
+async def handle_ielts(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if context.user_data.get("ielts_pending"):
+        return await get_ielts_score(update, context)
+    return await get_ielts(update, context)
+
+
+
     context.user_data["activities"] = update.message.text
     await update.message.reply_text(
         "🎨 *Tell me about your personal portfolio & extracurriculars!*\n\n"
@@ -388,14 +400,8 @@ def main():
             COUNTRY: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_country)],
             MAJOR: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_major)],
             GPA: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_gpa)],
-            SAT: [MessageHandler(filters.TEXT & ~filters.COMMAND, lambda u, c: (
-                get_sat(u, c) if not c.user_data.get("sat_pending")
-                else get_sat_score(u, c)
-            ))],
-            IELTS: [MessageHandler(filters.TEXT & ~filters.COMMAND, lambda u, c: (
-                get_ielts(u, c) if not c.user_data.get("ielts_pending")
-                else get_ielts_score(u, c)
-            ))],
+            SAT: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_sat)],
+            IELTS: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_ielts)],
             ACTIVITIES: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_activities)],
             EXTRACURRICULARS: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_extracurriculars)],
             PORTFOLIO: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_portfolio)],
